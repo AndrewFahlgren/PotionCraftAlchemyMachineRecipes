@@ -129,6 +129,11 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 
             //Read through the list parsing each recipe manually since list deserialization is not supported in unity
             var savedRecipesJson = stateJsonString.Substring(startSavedRecipesIndex, endSavedRecipesIndex - startSavedRecipesIndex);
+            if (savedRecipesJson.Length <=2)
+            {
+                Plugin.PluginLogger.LogInfo("No existing alchemy machine recipes found during load");
+                return true;
+            }
             var savedRecipes = new List<SavedRecipe>();
             var objectEndIndex = 0;
             //Continue parsing list until we find a non-comma character after the parsed object
