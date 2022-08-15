@@ -13,6 +13,7 @@ using System.Text;
 using UnityEngine;
 using static PotionCraft.SaveLoadSystem.ProgressState;
 using static PotionCraft.ScriptableObjects.Potion;
+using static PotionCraft.ScriptableObjects.Potion.UsedComponent;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 {
@@ -35,9 +36,6 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             var potionCraftPanel = Managers.Potion.potionCraftPanel;
             //Add recipe to book
             recipeBook.AddRecipe(recipe);
-            //Update values in the same way that a normal recipe would to avoid any unintended consequences
-            potionCraftPanel.previousPotionRecipe = null;
-            potionCraftPanel.potionChangedAfterSavingRecipe = false;
             Managers.Potion.potionCraftPanel.UpdateSaveRecipeButton(false);
             Managers.Ingredient.alchemyMachine.finishLegendarySubstanceWindow.UpdateSaveProductRecipeButton();
             return true;
@@ -130,6 +128,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             }
             recipe.potionFromPanel.collectedPotionEffects.Add(legendaryIngredient?.name);
             recipe.potionFromPanel.collectedPotionEffects.Add(spawnedItem.name);
+            UsedComponent.ClearIndexes();
 
             return recipe;
         }
@@ -223,13 +222,16 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static bool AddLegendaryIngredientToList(RecipeBookLeftPageContent instance)
         {
-            if (instance.currentPotion == null || !IsLegendaryRecipe(instance.currentPotion)) return true;
+            if (instance.currentPotion == null) return true;
+            FixRecipeIfBroken(instance.currentPotion);
+            if (!IsLegendaryRecipe(instance.currentPotion)) return true;
             var requiredLegendaryProduct = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
             if (requiredLegendaryProduct != null)
             {
                 var component = UsedComponent.GetComponent(instance.currentPotion.usedComponents, requiredLegendaryProduct);
                 ++component.amount;
             }
+            UsedComponent.ClearIndexes();
             return true;
         }
 
@@ -240,10 +242,28 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void RemoveLegendaryIngredientFromList(RecipeBookLeftPageContent instance)
         {
-            if (instance.currentPotion == null || !IsLegendaryRecipe(instance.currentPotion)) return;
+            if (instance.currentPotion == null) return;
+            FixRecipeIfBroken(instance.currentPotion);
+            if (!IsLegendaryRecipe(instance.currentPotion)) return;
             if (instance.currentPotion.usedComponents.Count == 0) return;
             if (instance.currentPotion.usedComponents.Last().componentObject is not AlchemyMachineProduct) return;
             instance.currentPotion.usedComponents.RemoveAt(instance.currentPotion.usedComponents.Count - 1);
+            UsedComponent.ClearIndexes();
+        }
+
+        private static void FixRecipeIfBroken(Potion potion)
+        {
+            var firstComponent = potion.usedComponents.FirstOrDefault();
+            if (firstComponent == null || firstComponent.componentObject is not PotionBase)
+            {
+                potion.usedComponents.Insert(0, new UsedComponent
+                {
+                    amount = 1,
+                    componentObject = potion.potionBase ?? Managers.RecipeMap.currentMap.potionBase,
+                    componentType = ComponentType.PotionBase
+                });
+                UsedComponent.ClearIndexes();
+            }
         }
 
         /// <summary>

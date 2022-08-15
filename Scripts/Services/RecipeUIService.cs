@@ -82,7 +82,17 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         {
             const float spriteScale = 1.5f;
 
-            if (instance.currentPotion == null) return;
+            if (StaticStorage.PotionBackgroundSprite == null)
+            {
+                StaticStorage.PotionBackgroundSprite = potionSlotBackground.sprite;
+                StaticStorage.PotionBackgroundColor = potionSlotBackground.color;
+                StaticStorage.PotionBackgroundSize = potionSlotBackground.size;
+            }
+            if (instance.currentPotion == null)
+            {
+                RestorePotionSlotBackground(potionSlotBackground);
+                return;
+            }
             var isLegendaryRecipe = RecipeService.IsLegendaryRecipe(instance.currentPotion);
             ShowHide(instance.potionCustomizationPanel.customizeBottleButton.gameObject, !isLegendaryRecipe);
             ShowHide(instance.potionCustomizationPanel.customizeIconButton.gameObject, !isLegendaryRecipe);
@@ -99,12 +109,6 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance.currentPotion);
                 if (product == null) return;
                 var sprite = product.GetRecipeIcon();
-                if (StaticStorage.PotionBackgroundSprite == null)
-                {
-                    StaticStorage.PotionBackgroundSprite = potionSlotBackground.sprite;
-                    StaticStorage.PotionBackgroundColor = potionSlotBackground.color;
-                    StaticStorage.PotionBackgroundSize = potionSlotBackground.size;
-                }
                 potionSlotBackground.color = new Color(1,1,1,1);
                 potionSlotBackground.sprite = sprite;
                 potionSlotBackground.color = new Color(potionSlotBackground.color.r, potionSlotBackground.color.g, potionSlotBackground.color.b, 1.0f);
@@ -112,11 +116,16 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             }
             else
             {
-                potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
-                potionSlotBackground.sprite = StaticStorage.PotionBackgroundSprite;
-                potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
-                potionSlotBackground.size = StaticStorage.PotionBackgroundSize;
+                RestorePotionSlotBackground(potionSlotBackground);
             }
+        }
+
+        private static void RestorePotionSlotBackground(SpriteRenderer potionSlotBackground)
+        {
+            potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
+            potionSlotBackground.sprite = StaticStorage.PotionBackgroundSprite;
+            potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
+            potionSlotBackground.size = StaticStorage.PotionBackgroundSize;
         }
 
         private static void ShowHide(GameObject gameObject, bool show)
