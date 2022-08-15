@@ -10,6 +10,7 @@ using PotionCraft.ScriptableObjects.AlchemyMachineProducts;
 using PotionCraft.Settings;
 using PotionCraft.TMPAtlasGenerationSystem;
 using PotionCraftAlchemyMachineRecipes.Scripts.Storage;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -39,9 +40,16 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static bool FixLegendaryRecipeTooltipContent(Potion instance, ref TooltipContent result, int itemCount, bool anyModifierHeld)
         {
-            if (!RecipeService.IsLegendaryRecipe(instance)) return true;
-            var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance);
-            result = product.GetTooltipContent(itemCount, anyModifierHeld);
+            TooltipContent productTooltip = null;
+            var exResult = Ex.RunSafe(() =>
+            {
+                if (!RecipeService.IsLegendaryRecipe(instance)) return true;
+                var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance);
+                productTooltip = product.GetTooltipContent(itemCount, anyModifierHeld);
+                return false;
+            });
+            if (exResult || productTooltip == null) return true;
+            result = productTooltip;
             return false;
         }
 
@@ -97,14 +105,14 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                     StaticStorage.PotionBackgroundColor = potionSlotBackground.color;
                     StaticStorage.PotionBackgroundSize = potionSlotBackground.size;
                 }
+                potionSlotBackground.color = new Color(1,1,1,1);
                 potionSlotBackground.sprite = sprite;
-                potionSlotBackground.color = new Color(potionSlotBackground.color.r, potionSlotBackground.color.g, potionSlotBackground.color.b, 1.0f);
                 potionSlotBackground.size *= spriteScale;
             }
             else
             {
-                potionSlotBackground.sprite = StaticStorage.PotionBackgroundSprite;
                 potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
+                potionSlotBackground.sprite = StaticStorage.PotionBackgroundSprite;
                 potionSlotBackground.size = StaticStorage.PotionBackgroundSize;
             }
         }
@@ -191,19 +199,27 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void ChangeBrewPotionButtonCount(ref int result, RecipeBookRightPageContent instance)
         {
-            if (instance.currentPotion == null) return;
-            if (!RecipeService.IsLegendaryRecipe(instance.currentPotion)) return;
-            var requiredProductInstance = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
-            if (requiredProductInstance != null)
+            try
             {
-                //Get available count of the required legendary stone if it is required for the recipe
-                var availableProductCount = RecipeService.GetAvailableProductCount(requiredProductInstance);
-                //Update the count to take this into consideration
-                if (availableProductCount < result)
+                if (instance.currentPotion == null) return;
+                if (!RecipeService.IsLegendaryRecipe(instance.currentPotion)) return;
+                var requiredProductInstance = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
+                if (requiredProductInstance != null)
                 {
-                    result = availableProductCount;
+                    //Get available count of the required legendary stone if it is required for the recipe
+                    var availableProductCount = RecipeService.GetAvailableProductCount(requiredProductInstance);
+                    //Update the count to take this into consideration
+                    if (availableProductCount < result)
+                    {
+                        result = availableProductCount;
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Ex.LogException(ex);
+            }
+            
         }
     }
 }

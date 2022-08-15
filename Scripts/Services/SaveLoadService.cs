@@ -56,26 +56,35 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void InjectSavedRecipes(ref string result)
         {
-            if (StaticStorage.RecipesToSave == null) return;
-            //Serialize recipies to json
-            var sbRecipes = new StringBuilder();
-            sbRecipes.Append('[');
-            var firstRecipe = true;
-            StaticStorage.RecipesToSave.ForEach(recipe =>
+            string modifiedResult = null;
+            var savedStateJson = result;
+            Ex.RunSafe(() =>
             {
-                if (!firstRecipe)
+                if (StaticStorage.RecipesToSave == null) return;
+                //Serialize recipies to json
+                var sbRecipes = new StringBuilder();
+                sbRecipes.Append('[');
+                var firstRecipe = true;
+                StaticStorage.RecipesToSave.ForEach(recipe =>
                 {
-                    sbRecipes.Append(',');
-                }
-                firstRecipe = false;
-                sbRecipes.Append(JsonUtility.ToJson(recipe, false));
+                    if (!firstRecipe)
+                    {
+                        sbRecipes.Append(',');
+                    }
+                    firstRecipe = false;
+                    sbRecipes.Append(JsonUtility.ToJson(recipe, false));
+                });
+                sbRecipes.Append(']');
+                var serializedRecipesToSave = $",\"{StaticStorage.AlchemyMachineRecipesJsonSaveName}\":{sbRecipes}";
+                //Insert custom field at the end of the save file at the top level
+                var insertIndex = savedStateJson.LastIndexOf('}');
+                modifiedResult = savedStateJson.Insert(insertIndex, serializedRecipesToSave);
+                StaticStorage.RecipesToSave = null;
             });
-            sbRecipes.Append(']');
-            var serializedRecipesToSave = $",\"{StaticStorage.AlchemyMachineRecipesJsonSaveName}\":{sbRecipes}";
-            //Insert custom field at the end of the save file at the top level
-            var insertIndex = result.LastIndexOf('}');
-            result = result.Insert(insertIndex, serializedRecipesToSave);
-            StaticStorage.RecipesToSave = null;
+            if (!string.IsNullOrEmpty(modifiedResult))
+            {
+                result = modifiedResult;
+            }
         }
 
         /// <summary>

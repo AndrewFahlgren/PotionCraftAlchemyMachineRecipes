@@ -22,7 +22,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(SaveProductRecipeButton ___saveProductRecipeButton)
         {
-            RecipeUIService.UpdateSaveProductRecipeButton(___saveProductRecipeButton);
+            Ex.RunSafe(() => RecipeUIService.UpdateSaveProductRecipeButton(___saveProductRecipeButton));
         }
     }
 
@@ -31,7 +31,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix()
         {
-            return RecipeService.ActuallySaveProductRecipeButton();
+            return Ex.RunSafe(() => RecipeService.ActuallySaveProductRecipeButton());
         }
     }
 
@@ -40,7 +40,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix()
         {
-            return RecipeService.StorePotionsBeforeWipe();
+            return Ex.RunSafe(() => RecipeService.StorePotionsBeforeWipe());
         }
     }
 
@@ -49,7 +49,12 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(ref Potion __result, Potion __instance)
         {
-            RecipeService.CopyImportantInfoToPotionInstance(__result, __instance);
+            RunSafe(__result, __instance);
+        }
+
+        private static void RunSafe(Potion __result, Potion __instance)
+        {
+            Ex.RunSafe(() => RecipeService.CopyImportantInfoToPotionInstance(__result, __instance));
         }
     }
 
@@ -67,7 +72,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(RecipeBook __instance, int index)
         {
-            return RecipeUIService.FixLegendaryRecipeBookmarkIcon(__instance, index);
+            return Ex.RunSafe(() => RecipeUIService.FixLegendaryRecipeBookmarkIcon(__instance, index));
         }
     }
 
@@ -77,7 +82,12 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(ref Potion __result, PotionManager __instance)
         {
-            RecipeService.StoreRecipeMarksFromPotionBrew(__result, __instance);
+            RunSafe(__result, __instance);
+        }
+
+        private static void RunSafe(Potion __result, PotionManager __instance)
+        {
+            Ex.RunSafe(() => RecipeService.StoreRecipeMarksFromPotionBrew(__result, __instance));
         }
     }
 
@@ -86,7 +96,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(RecipeBookLeftPageContent __instance, SpriteRenderer ___potionSlotBackground)
         {
-            RecipeUIService.HidePotionCustomization(__instance, ___potionSlotBackground);
+            Ex.RunSafe(() => RecipeUIService.HidePotionCustomization(__instance, ___potionSlotBackground));
         }
     }
 
@@ -95,7 +105,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(RecipeBookLeftPageContent __instance)
         {
-            return RecipeService.AddLegendaryIngredientToList(__instance);
+            return Ex.RunSafe(() => RecipeService.AddLegendaryIngredientToList(__instance));
         }
     }
 
@@ -104,7 +114,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(RecipeBookLeftPageContent __instance)
         {
-            RecipeService.RemoveLegendaryIngredientFromList(__instance);
+            Ex.RunSafe(() => RecipeService.RemoveLegendaryIngredientFromList(__instance));
         }
     }
 
@@ -116,10 +126,10 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
                                                 int ____ColorMask, Color ___missingIngredientsTextColor, Color ___missingIngredientsSpriteColor,
                                                 List<IngredientTooltipObject> ___instantiatedIngredientObjects, Transform ___ingredientTooltipObjectsContainer)
         {
-            return RecipeUIService.UpdateIngredientList(__instance, ___ingredientsListTitle, ___emptyPageTextColor,
-                                                       ___ingredientsText, ___filledPageTextColor, ____ColorMask, 
-                                                       ___missingIngredientsTextColor, ___missingIngredientsSpriteColor, 
-                                                       ___instantiatedIngredientObjects, ___ingredientTooltipObjectsContainer);
+            return Ex.RunSafe(() => RecipeUIService.UpdateIngredientList(__instance, ___ingredientsListTitle, ___emptyPageTextColor,
+                                                                         ___ingredientsText, ___filledPageTextColor, ____ColorMask, 
+                                                                         ___missingIngredientsTextColor, ___missingIngredientsSpriteColor, 
+                                                                         ___instantiatedIngredientObjects, ___ingredientTooltipObjectsContainer));
         }
     }
 
@@ -128,7 +138,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(RecipeBookContinuePotionBrewingButton __instance, RecipeBookRightPageContent ___rightPageContent)
         {
-            RecipeUIService.DisableContinueFromHereButton(__instance, ___rightPageContent);
+            Ex.RunSafe(() => RecipeUIService.DisableContinueFromHereButton(__instance, ___rightPageContent));
         }
     }
 
@@ -146,7 +156,22 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(RecipeBookBrewPotionButton __instance, RecipeBookRightPageContent ___rightPageContent)
         {
-            return AlchemyMachineProductService.BrewPotion(__instance, ___rightPageContent);
+            return Ex.RunSafe(() => AlchemyMachineProductService.BrewPotion(__instance, ___rightPageContent), () => OnError(___rightPageContent));
+        }
+
+        private static bool OnError(RecipeBookRightPageContent rightPageContent)
+        {
+            try
+            {
+                if (rightPageContent.currentPotion == null) return true;
+                if (!RecipeService.IsLegendaryRecipe(rightPageContent.currentPotion)) return true;
+                return false;
+            }
+            catch(Exception ex)
+            {
+                Ex.LogException(ex);
+            }
+            return true;
         }
     }
 
@@ -155,7 +180,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(Potion ___currentPotion)
         {
-            return RecipeService.RemoveRecipePotionEffects(___currentPotion);
+            return Ex.RunSafe(() => RecipeService.RemoveRecipePotionEffects(___currentPotion));
         }
     }
 
@@ -164,7 +189,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static void Postfix(Potion ___currentPotion)
         {
-            RecipeService.ReAddRecipePotionEffects(___currentPotion);
+            Ex.RunSafe(() => RecipeService.ReAddRecipePotionEffects(___currentPotion));
         }
     }
 
@@ -173,7 +198,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(SavePool savePool, SavedState savedState)
         {
-            return SaveLoadService.RemoveAlchemyMachineRecipesFromSavedState(savePool, savedState);
+            return Ex.RunSafe(() => SaveLoadService.RemoveAlchemyMachineRecipesFromSavedState(savePool, savedState));
         }
     }
 
@@ -191,7 +216,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(File __instance)
         {
-            return SaveLoadService.RetrieveStateJsonString(__instance);
+            return Ex.RunSafe(() => SaveLoadService.RetrieveStateJsonString(__instance));
         }
     }
 
@@ -200,7 +225,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     {
         static bool Prefix(Type type)
         {
-            return SaveLoadService.RetreiveSavedAlchemyMachineRecipesFromSavedState(type);
+            return Ex.RunSafe(() => SaveLoadService.RetreiveSavedAlchemyMachineRecipesFromSavedState(type));
         }
     }
 }
