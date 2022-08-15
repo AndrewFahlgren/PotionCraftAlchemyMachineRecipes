@@ -2,6 +2,7 @@
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Game;
+using PotionCraft.ObjectBased.AlchemyMachine;
 using PotionCraft.ObjectBased.UIElements.Books.GoalsBook;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ObjectBased.UIElements.ConfirmationWindow;
@@ -85,10 +86,14 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 }
 
                 //Update stats and goals
-                GoalsLoader.GetGoalByName("CreatePotionFromRecipeBook").ProgressIncrement();
+                var potionsRequiredForRecipe = GetPotionCountForAlchemyMachineProduct(product);
+                var potionBrewedFromRecipeGoal = GoalsLoader.GetGoalByName("CreatePotionFromRecipeBook");
+                //I am not sure if this goal tracks potions brewed but just incase it does we should increment it by the number of required potions to simulate brewing potions manually for the recipe
+                Enumerable.Range(0, potionsRequiredForRecipe).ToList().ForEach(i => potionBrewedFromRecipeGoal.ProgressIncrement());
                 GoalsLoader.GetGoalByName("CreateLegendarySubstance" + productName, false)?.ProgressIncrement();
                 Sound.Play(Settings<SoundPresetInterface>.Asset.potionFinishing);
-                Managers.Potion.PotionsBrewed += count.Value;
+                //Update the potions brewed counter by the number of potions that would have been required to make this alchemy machine product
+                Managers.Potion.PotionsBrewed += count.Value * potionsRequiredForRecipe;
                 Managers.Ingredient.alchemyMachine.LegendarySubstancesBrewedAmount += count.Value;
             }
         }
@@ -144,6 +149,24 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             var requiredProduct = modifiedList[^2];
             if (string.IsNullOrEmpty(requiredProduct)) return null;
             return AlchemyMachineProduct.GetByName(requiredProduct, warning: false);
+        }
+
+        public static int GetPotionCountForAlchemyMachineProduct(AlchemyMachineProduct product)
+        {
+            var legendaryRecipe = GetLegendaryRecipe(product);
+            //This should never happen but the minimum possible ammount of potions used is 5 so lets return that in this error case
+            if (legendaryRecipe == null) return 5;
+            var machineSlots = Enum.GetValues(typeof(Slot)).OfType<Slot>().Except(new[] { Slot.RightFurnace, Slot.LeftFurnace }).ToList();
+            return machineSlots.Where(s => legendaryRecipe.DesiredItemPerSlot(s) != null).Count();
+        }
+
+        public static LegendaryRecipe GetLegendaryRecipe(AlchemyMachineProduct product)
+        {
+            return Managers.SaveLoad.SelectedProgressState
+                                    .unlockedLegendaryRecipes
+                                    .Select(r => LegendaryRecipe.GetByName(r))
+                                    .FirstOrDefault(lr => lr.resultItem.name == product.name);
+
         }
     }
 }
