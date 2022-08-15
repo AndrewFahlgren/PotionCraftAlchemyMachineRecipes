@@ -43,10 +43,10 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             TooltipContent productTooltip = null;
             var exResult = Ex.RunSafe(() =>
             {
-                if (!RecipeService.IsLegendaryRecipe(instance)) return true;
-                var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance);
+            if (!RecipeService.IsLegendaryRecipe(instance)) return true;
+            var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance);
                 productTooltip = product.GetTooltipContent(itemCount, anyModifierHeld);
-                return false;
+            return false;
             });
             if (exResult || productTooltip == null) return true;
             result = productTooltip;
@@ -107,12 +107,14 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 }
                 potionSlotBackground.color = new Color(1,1,1,1);
                 potionSlotBackground.sprite = sprite;
+                potionSlotBackground.color = new Color(potionSlotBackground.color.r, potionSlotBackground.color.g, potionSlotBackground.color.b, 1.0f);
                 potionSlotBackground.size *= spriteScale;
             }
             else
             {
                 potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
                 potionSlotBackground.sprite = StaticStorage.PotionBackgroundSprite;
+                potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
                 potionSlotBackground.size = StaticStorage.PotionBackgroundSize;
             }
         }
@@ -201,18 +203,18 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         {
             try
             {
-                if (instance.currentPotion == null) return;
-                if (!RecipeService.IsLegendaryRecipe(instance.currentPotion)) return;
-                var requiredProductInstance = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
-                if (requiredProductInstance != null)
+            if (instance.currentPotion == null) return;
+            if (!RecipeService.IsLegendaryRecipe(instance.currentPotion)) return;
+            var requiredProductInstance = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
+            if (requiredProductInstance != null)
+            {
+                //Get available count of the required legendary stone if it is required for the recipe
+                var availableProductCount = RecipeService.GetAvailableProductCount(requiredProductInstance);
+                //Update the count to take this into consideration
+                if (availableProductCount < result)
                 {
-                    //Get available count of the required legendary stone if it is required for the recipe
-                    var availableProductCount = RecipeService.GetAvailableProductCount(requiredProductInstance);
-                    //Update the count to take this into consideration
-                    if (availableProductCount < result)
-                    {
-                        result = availableProductCount;
-                    }
+                    result = availableProductCount;
+                }
                 }
             }
             catch (Exception ex)
