@@ -15,4 +15,5 @@ When a recipe is saved it works just like a regular recipe but requires the ingr
   - The contents of the BepInEx zip should be extracted to your PotionCraft steam directory.
   - If properly installed, you should see a `winhttp.dll` file and `BepInEx` folder alongside your `Potion Craft.exe`
 - Download and install [AlchemyMachineRecipes](https://github.com/AndrewFahlgren/PotionCraftAlchemyMachineRecipes/releases/)
-  - The `PotionCraftAlchemyMachineRecipes.dll` should be placed in the PotionCraft steam directory inside of the BepInEx plugins folder (`...\Potion Craft\BepInEx\plugins`)
+  - The contents of the AlchemyMachineRecipes zip should be extracted to your PotionCraft steam directory.
+  - If properly installed, you should have a `PotionCraftAlchemyMachineRecipes.dll` file at `Potion Craft/BepInEx/plugins`
