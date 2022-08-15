@@ -223,7 +223,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static bool AddLegendaryIngredientToList(RecipeBookLeftPageContent instance)
         {
-            if (instance.currentPotion == null) return true;
+            if (instance.currentPotion == null || !IsLegendaryRecipe(instance.currentPotion)) return true;
             var requiredLegendaryProduct = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
             if (requiredLegendaryProduct != null)
             {
@@ -240,7 +240,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void RemoveLegendaryIngredientFromList(RecipeBookLeftPageContent instance)
         {
-            if (instance.currentPotion == null) return;
+            if (instance.currentPotion == null || !IsLegendaryRecipe(instance.currentPotion)) return;
             if (instance.currentPotion.usedComponents.Count == 0) return;
             if (instance.currentPotion.usedComponents.Last().componentObject is not AlchemyMachineProduct) return;
             instance.currentPotion.usedComponents.RemoveAt(instance.currentPotion.usedComponents.Count - 1);
