@@ -1,4 +1,4 @@
-ALCHEMY MACHINE RECIPES - 0.5.0
+ALCHEMY MACHINE RECIPES - 0.5.0.1
 This mod allows the saving and brewing of alchemy machine recipes
 
 :: REQUIREMENTS ::
