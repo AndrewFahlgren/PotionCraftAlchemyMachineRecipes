@@ -18,4 +18,4 @@ When a recipe is saved it works just like a regular recipe but requires the ingr
   - The contents of the AlchemyMachineRecipes zip should be extracted to your PotionCraft steam directory.
   - If properly installed, you should have a `PotionCraftAlchemyMachineRecipes.dll` file at `Potion Craft/BepInEx/plugins`
 
-Also see this user friendly document that walks through the process of installing mods for Potion Craft (credit MattTheDuck): https://docs.google.com/document/d/1UmvUEVOa3IIYowXi6-KTuOIk2-HA1AEFM3V6PxVfhUo
+Also see this user friendly document that walks through the process of installing mods for Potion Craft (credit catgocri): https://docs.google.com/document/d/1UmvUEVOa3IIYowXi6-KTuOIk2-HA1AEFM3V6PxVfhUo
