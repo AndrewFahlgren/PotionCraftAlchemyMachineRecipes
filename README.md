@@ -11,6 +11,12 @@ When a recipe is saved it works just like a regular recipe but requires the ingr
 
 ## Installation
 
+### Automatic installation with [Thunderstore Mod Manager](https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager) or [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
+
+Go to [Alchemy Machine Recipes on Thunderstore](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Alchemy_Machine_Recipes/) and press "Install with Mod Manager".
+
+### Manual installation
+
 If you are not sure where your Potion Craft steam directory is you can find out by opening steam, going to your library, and right clicking on Potion Craft > Properties > Local Files > Browse.
 
 - Download and install [BepInEx 5.x 64 bit](https://github.com/BepInEx/BepInEx/releases)
