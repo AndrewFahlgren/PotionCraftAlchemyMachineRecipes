@@ -35,4 +35,4 @@ See [this guide](https://docs.google.com/document/d/1Y3PDeMaffkh7x4U3j46YZ9K6AhM
 ## Other Mods
 I am making a series of mods which make recipes easier to use. All of these mods are intended to be balanced and feel like part of the base game:
 
-[Recipe Waypoints](https://potion-craft.thunderstore.io/package/AndrewFahlgren/PotionCraftRecipeWaypoints/) - Allows you to see where your waypoint recipes (those with no effects or are far away from their last effect) are on the map so you know where you are going when you continue brewing from that recipe.
+[Recipe Waypoints](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Recipe_Waypoints/) - Allows you to see where your waypoint recipes (those with no effects or are far away from their last effect) are on the map so you know where you are going when you continue brewing from that recipe.
