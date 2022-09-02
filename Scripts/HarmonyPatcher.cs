@@ -5,6 +5,7 @@ using PotionCraft.ObjectBased.AlchemyMachine;
 using PotionCraft.ObjectBased.UIElements;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ObjectBased.UIElements.FinishLegendarySubstanceMenu;
+using PotionCraft.ObjectBased.UIElements.PotionCraftPanel;
 using PotionCraft.ObjectBased.UIElements.Tooltip;
 using PotionCraft.SaveFileSystem;
 using PotionCraft.SaveLoadSystem;
@@ -76,18 +77,55 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
         }
     }
 
+    [HarmonyPatch(typeof(PotionCraftPanel), "MakePotion")]
+    public class SetCurrentlyMakingPotionPatch
+    {
+        static bool Prefix()
+        {
+            return Ex.RunSafe(() => RecipeService.SetCurrentlyMakingPotion(true));
+        }
+    }
+
+    [HarmonyPatch(typeof(PotionCraftPanel), "MakePotion")]
+    public class UnsetCurrentlyMakingPotionPatch
+    {
+        static void Postfix()
+        {
+            Ex.RunSafe(() => RecipeService.SetCurrentlyMakingPotion(false));
+        }
+    }
+
+
+
+    [HarmonyPatch(typeof(SaveRecipeButton), "GenerateRecipe")]
+    public class SetCurrentlyGeneratingRecipePatch
+    {
+        static bool Prefix()
+        {
+            return Ex.RunSafe(() => RecipeService.SetCurrentlyGeneratingRecipe(true));
+        }
+    }
+
+    [HarmonyPatch(typeof(SaveRecipeButton), "GenerateRecipe")]
+    public class UnsetCurrentlyGeneratingRecipePatch
+    {
+        static void Postfix()
+        {
+            Ex.RunSafe(() => RecipeService.SetCurrentlyGeneratingRecipe(false));
+        }
+    }
 
     [HarmonyPatch(typeof(PotionManager), "GeneratePotionFromCurrentPotion")]
     public class StoreRecipeMarksFromPotionBrewPatch
     {
         static void Postfix(ref Potion __result, PotionManager __instance)
         {
-            RunSafe(__result, __instance);
+            RunSafe(__result);
         }
 
-        private static void RunSafe(Potion __result, PotionManager __instance)
+        private static void RunSafe(Potion __result)
         {
-            Ex.RunSafe(() => RecipeService.StoreRecipeMarksFromPotionBrew(__result, __instance));
+            Ex.RunSafe(() => RecipeService.StoreRecipeMarksFromPotionBrew(__result));
         }
     }
 

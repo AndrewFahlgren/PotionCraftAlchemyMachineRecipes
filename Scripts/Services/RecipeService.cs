@@ -3,6 +3,7 @@ using PotionCraft.ManagersSystem.Potion;
 using PotionCraft.ObjectBased.AlchemyMachine;
 using PotionCraft.ObjectBased.Potion;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
+using PotionCraft.SaveLoadSystem;
 using PotionCraft.ScriptableObjects;
 using PotionCraft.ScriptableObjects.AlchemyMachineProducts;
 using PotionCraftAlchemyMachineRecipes.Scripts.Storage;
@@ -184,15 +185,29 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             return recipe.potionFromPanel.recipeMarks.Count(m => m.type == SerializedRecipeMark.Type.PotionBase) > 1;
         }
 
+        public static bool SetCurrentlyMakingPotion(bool currentlyMakingPotion)
+        {
+            StaticStorage.CurrentlyMakingPotion = currentlyMakingPotion;
+            return true;
+        }
+
+        public static bool SetCurrentlyGeneratingRecipe(bool currentlyGeneratingRecipe)
+        {
+            StaticStorage.CurrentlyGeneratingRecipe = currentlyGeneratingRecipe;
+            return true;
+        }
+
         /// <summary>
         /// Postfix method for StoreRecipeMarksFromPotionBrewPatch.
         /// When a potion is brewed all recipe marks are lost.
         /// This method will ensure that recipe marks are copied over to the brewed potion so the recipe generation code can access them.
         /// </summary>
-        public static void StoreRecipeMarksFromPotionBrew(Potion copyTo, PotionManager instance)
+        public static void StoreRecipeMarksFromPotionBrew(Potion copyTo)
         {
-            var copyFrom = instance.potionCraftPanel.GetCurrentPotion();
-            CopyImportantInfoToPotionInstance(copyTo, copyFrom);
+            if (!StaticStorage.CurrentlyMakingPotion || StaticStorage.CurrentlyGeneratingRecipe) return;
+            var copyFrom = SerializedPotionFromPanel.GetPotionFromCurrentPotion();
+            var copyFromPotion = Managers.Potion.potionCraftPanel.GetCurrentPotion();
+            CopyImportantInfoToPotionInstance(copyTo, copyFromPotion, copyFrom);
         }
 
         /// <summary>
@@ -202,9 +217,25 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void CopyImportantInfoToPotionInstance(Potion copyTo, Potion copyFrom)
         {
+            CopyImportantInfoToPotionInstance(copyTo, copyFrom, copyFrom.potionFromPanel);
+        }
+
+        /// <summary>
+        /// When a potion is brewed all recipe marks are lost.
+        /// This method will ensure that recipe marks are copied over to the brewed potion so the recipe generation code can access them.
+        /// </summary>
+        public static void CopyImportantInfoToPotionInstance(Potion copyTo, Potion copyFromPotion, SerializedPotionFromPanel copyFrom)
+        {
             var recipeMarks = copyTo.potionFromPanel.recipeMarks;
-            copyFrom.potionFromPanel.recipeMarks.ForEach(m => recipeMarks.Add(m.Clone()));
-            copyTo.potionFromPanel.collectedPotionEffects = copyFrom.potionFromPanel.collectedPotionEffects;
+            recipeMarks.Clear();
+            copyFrom.recipeMarks.ForEach(m => recipeMarks.Add(m.Clone()));
+            copyTo.potionFromPanel.collectedPotionEffects.Clear();
+            foreach (var collectedPotionEffect in copyFromPotion?.Effects ?? Managers.Potion.collectedPotionEffects)
+            {
+                if (collectedPotionEffect == null)
+                    break;
+                copyTo.potionFromPanel.collectedPotionEffects.Add(collectedPotionEffect.name);
+            }
         }
 
         /// <summary>

@@ -8,6 +8,9 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Storage
     {
         public const string AlchemyMachineRecipesJsonSaveName = "FahlgorithmAlchemyMachineRecipes";
 
+        public static bool CurrentlyMakingPotion;
+        public static bool CurrentlyGeneratingRecipe;
+
         public static List<InventoryItem> Ingredients;
         public static PotionEffect[] SavedPotionEffects;
         public static Sprite PotionBackgroundSprite;
