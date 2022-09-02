@@ -13,6 +13,7 @@ using PotionCraft.ScriptableObjects;
 using PotionCraftAlchemyMachineRecipes.Scripts.Services;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 
@@ -264,6 +265,29 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
         static bool Prefix(Type type)
         {
             return Ex.RunSafe(() => SaveLoadService.RetreiveSavedAlchemyMachineRecipesFromSavedState(type));
+        }
+    }
+
+    [HarmonyPatch(typeof(Potion), "GetSerializedInventorySlot")]
+    public class SavePotionSerializedDataPatch
+    {
+        static void Postfix(SerializedInventorySlot __result, Potion __instance)
+        {
+            Ex.RunSafe(() => SaveLoadService.SavePotionSerializedData(__result, __instance));
+        }
+    }
+    
+    [HarmonyPatch(typeof(Potion))]
+    public class LoadPotionSerializedDataPatch
+    {
+        static MethodInfo TargetMethod()
+        {
+            return typeof(Potion).GetMethod("GetFromSerializedObject", new[] { typeof(SerializedInventorySlot) });
+        }
+
+        static void Postfix(Potion __result, SerializedInventorySlot serializedObject)
+        {
+            Ex.RunSafe(() => SaveLoadService.LoadPotionSerializedData(__result, serializedObject));
         }
     }
 }

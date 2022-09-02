@@ -1,11 +1,13 @@
 ﻿using PotionCraft.ManagersSystem;
 using PotionCraft.SaveFileSystem;
 using PotionCraft.SaveLoadSystem;
+using PotionCraft.ScriptableObjects;
 using PotionCraftAlchemyMachineRecipes.Scripts.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using static PotionCraft.SaveLoadSystem.ProgressState;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 {
@@ -179,6 +181,55 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 progressState.savedRecipes[savedRecipe.Index] = savedRecipe.Recipe;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Postfix method for SavePotionSerializedDataPatch
+        /// Inserts the potionFromPanel data into the SerializedPotion data. This ensures recipe marks are saved for each potion.
+        /// </summary>
+        public static void SavePotionSerializedData(SerializedInventorySlot result, Potion instance)
+        {
+            if (result.data.Contains("potionFromPanel")) return;
+            var dataToInsert = $",\"potionFromPanel\":{JsonUtility.ToJson(instance.potionFromPanel)}";
+            var insertIndex = result.data.LastIndexOf('}');
+            result.data = result.data.Insert(insertIndex, dataToInsert);
+        }
+
+        /// <summary>
+        /// Postfix method for LoadPotionSerializedDataPatch
+        /// Deserializes the potionFromPanel data from the SerializedPotion data. This ensures recipe marks are loaded for each potion.
+        /// </summary>
+        public static void LoadPotionSerializedData(Potion result, SerializedInventorySlot serializedRecipe)
+        {
+            //Check if there is an existing potionFromPanel
+            var keyIndex = serializedRecipe.data.IndexOf("potionFromPanel");
+            if (keyIndex == -1)
+            {
+                return;
+            }
+            //Determine the start of the object
+            var startPotionFromPanelIndex = serializedRecipe.data.IndexOf('{', keyIndex);
+            if (startPotionFromPanelIndex == -1)
+            {
+                Plugin.PluginLogger.LogInfo("Error: potionFromPanel data in serialized potion is malformed.");
+                return;
+            }
+            //Find the closing bracket of the list
+            var endPotionFromPanelIndex = GetEndJsonIndex(serializedRecipe.data, startPotionFromPanelIndex, false);
+            if (endPotionFromPanelIndex >= serializedRecipe.data.Length)
+            {
+                Plugin.PluginLogger.LogInfo("Error: potionFromPanel data in serialized potion is malformed (bad end index).");
+                return;
+            }
+
+            var savedPotionFromPanelJson = serializedRecipe.data.Substring(startPotionFromPanelIndex, endPotionFromPanelIndex - startPotionFromPanelIndex);
+            if (savedPotionFromPanelJson.Length <= 2)
+            {
+                Plugin.PluginLogger.LogInfo("Error: potionFromPanel data in serialized potion is malformed (empty object).");
+                return;
+            }
+
+            result.potionFromPanel = JsonUtility.FromJson<SerializedPotionFromPanel>(savedPotionFromPanelJson);
         }
 
         /// <summary>
