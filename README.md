@@ -34,3 +34,5 @@ See [this guide](https://docs.google.com/document/d/1Y3PDeMaffkh7x4U3j46YZ9K6AhM
 I am making a series of mods which make recipes easier to use. All of these mods are intended to be balanced and feel like part of the base game:
 
 [Recipe Waypoints](https://github.com/AndrewFahlgren/PotionCraftRecipeWaypoints) - Allows you to see where your waypoint recipes (those with no effects or are far away from their last effect) are on the map so you know where you are going when you continue brewing from that recipe.
+
+[Pour Back In](https://github.com/AndrewFahlgren/PotionCraftPourBackIn) - Makes your potions work just like recipes. Pour potions back in the cauldron to continue where you left off. You can also finish potions before you add any effects so you can come back to them later just like a waypoint recipe.
