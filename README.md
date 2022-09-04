@@ -11,12 +11,6 @@ When a recipe is saved it works just like a regular recipe but requires the ingr
 
 ## Installation
 
-### Automatic installation with [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
-
-Go to [Alchemy Machine Recipes on Thunderstore](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Alchemy_Machine_Recipes/) and press "Install with Mod Manager".
-
-### Manual installation
-
 If you are not sure where your Potion Craft steam directory is you can find out by opening steam, going to your library, and right clicking on Potion Craft > Properties > Local Files > Browse.
 
 - Download and install [BepInEx 5.x 64 bit](https://github.com/BepInEx/BepInEx/releases)
@@ -26,6 +20,13 @@ If you are not sure where your Potion Craft steam directory is you can find out 
   - The contents of the AlchemyMachineRecipes zip should be extracted to your PotionCraft steam directory.
   - If properly installed, you should have a `PotionCraftAlchemyMachineRecipes.dll` file at `Potion Craft/BepInEx/plugins`
   
+### Installation with [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
+
+Thunderstore makes it easy to install Alchemy Machine Recipes although you will need to launch the game from the mod manager each time you play Potion Craft.
+
+- Go to [Alchemy Machine Recipes on Thunderstore](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Alchemy_Machine_Recipes/) and press "Install with Mod Manager".
+
+
 ### Steam Deck Installation
 See [this guide](https://docs.google.com/document/d/1Y3PDeMaffkh7x4U3j46YZ9K6AhM2EvRF9v3mAGBFzW4) for installing Potion Craft mods on the Steam Deck
 
