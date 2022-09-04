@@ -22,7 +22,7 @@ If you are not sure where your Potion Craft steam directory is you can find out 
   
 ### Installation with [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
 
-Thunderstore makes it easy to install Alchemy Machine Recipes although you will need to launch the game from the mod manager each time you play Potion Craft.
+r2modman makes it easy to install Alchemy Machine Recipes although you will need to launch the game from the mod manager each time you play Potion Craft.
 
 - Go to [Alchemy Machine Recipes on Thunderstore](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Alchemy_Machine_Recipes/) and press "Install with Mod Manager".
 
