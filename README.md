@@ -11,7 +11,7 @@ When a recipe is saved it works just like a regular recipe but requires the ingr
 
 ## Installation
 
-### Automatic installation with [Thunderstore Mod Manager](https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager) or [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
+### Automatic installation with [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
 
 Go to [Alchemy Machine Recipes on Thunderstore](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Alchemy_Machine_Recipes/) and press "Install with Mod Manager".
 
