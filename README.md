@@ -13,7 +13,7 @@ When a recipe is saved it works just like a regular recipe but requires the ingr
 
 If you are not sure where your Potion Craft steam directory is you can find out by opening steam, going to your library, and right clicking on Potion Craft > Properties > Local Files > Browse.
 
-- Download and install [BepInEx 5.x 64 bit](https://github.com/BepInEx/BepInEx/releases)
+- Download and install [BepInEx 5.x 64 bit](https://github.com/BepInEx/BepInEx/releases/latest)
   - The contents of the BepInEx zip should be extracted to your PotionCraft steam directory.
   - If properly installed, you should see a `winhttp.dll` file and `BepInEx` folder alongside your `Potion Craft.exe`
 - Download and install [AlchemyMachineRecipes](https://github.com/AndrewFahlgren/PotionCraftAlchemyMachineRecipes/releases/)
@@ -22,7 +22,7 @@ If you are not sure where your Potion Craft steam directory is you can find out 
   
 ### Installation with [r2modman mod manager](https://thunderstore.io/package/ebkr/r2modman/)
 
-r2modman makes it easy to install Alchemy Machine Recipes although you will need to launch the game from the mod manager each time you play Potion Craft.
+r2modman makes it easy to install Alchemy Machine Recipes although you will need to launch Potion Craft from the mod manager each time you play.
 
 - Go to [Alchemy Machine Recipes on Thunderstore](https://potion-craft.thunderstore.io/package/AndrewFahlgren/Alchemy_Machine_Recipes/) and press "Install with Mod Manager".
 
