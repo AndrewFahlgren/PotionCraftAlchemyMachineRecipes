@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace PotionCraftAlchemyMachineRecipes
 {
-    [BepInPlugin("com.fahlgorithm.potioncraftalchemymachinerecipies", "PotionCraftAlchemyMachineRecipes", "0.5.0.1")]
+    [BepInPlugin("com.fahlgorithm.potioncraftalchemymachinerecipies", "PotionCraftAlchemyMachineRecipes", "0.5.0.3")]
     [BepInProcess("Potion Craft.exe")]
     public class Plugin : BaseUnityPlugin
     {
