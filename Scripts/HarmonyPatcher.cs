@@ -160,15 +160,9 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     [HarmonyPatch(typeof(RecipeBookLeftPageContent), "UpdateIngredientsList")]
     public class ChangeAtlasNameForProductPatch
     {
-        static bool Prefix(RecipeBookLeftPageContent __instance, TextMeshPro ___ingredientsListTitle,
-                                                Color ___emptyPageTextColor, TextMeshPro ___ingredientsText, Color ___filledPageTextColor,
-                                                int ____ColorMask, Color ___missingIngredientsTextColor, Color ___missingIngredientsSpriteColor,
-                                                List<IngredientTooltipObject> ___instantiatedIngredientObjects, Transform ___ingredientTooltipObjectsContainer)
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            return Ex.RunSafe(() => RecipeUIService.UpdateIngredientList(__instance, ___ingredientsListTitle, ___emptyPageTextColor,
-                                                                         ___ingredientsText, ___filledPageTextColor, ____ColorMask, 
-                                                                         ___missingIngredientsTextColor, ___missingIngredientsSpriteColor, 
-                                                                         ___instantiatedIngredientObjects, ___ingredientTooltipObjectsContainer));
+            return RecipeUIService.UpdateIngredientList(instructions);
         }
     }
 

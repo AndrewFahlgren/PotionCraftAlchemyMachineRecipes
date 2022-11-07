@@ -1,4 +1,5 @@
-﻿using PotionCraft.ManagersSystem;
+﻿using HarmonyLib;
+using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.TMP;
 using PotionCraft.ObjectBased.UIElements;
 using PotionCraft.ObjectBased.UIElements.Books;
@@ -12,6 +13,9 @@ using PotionCraft.TMPAtlasGenerationSystem;
 using PotionCraftAlchemyMachineRecipes.Scripts.Storage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using TMPro;
 using UnityEngine;
 using static PotionCraft.ScriptableObjects.Potion;
@@ -133,64 +137,56 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             gameObject.SetActive(show);
         }
 
+        public static MethodInfo CrucibleAtlasNameMethod;
 
         /// <summary>
-        /// Prefix method for ChangeAtlasNameForProductPatch.
+        /// Transpiler method for ChangeAtlasNameForProductPatch.
         /// This is a method which overrides the existing UpdateIngredientsList method.
         /// The purpose of this is to allow legendary stones to have icons in the ingredient list.
-        /// The only thing this changes from the original method is the atlas name for the icon set and the sprite name to use the existing icons for legendary stones.
-        /// This method could probably be delted and replaced with a Transpiler but I was not able to pull that off on my first attempt.
         /// </summary>
-        public static bool UpdateIngredientList(RecipeBookLeftPageContent instance, TextMeshPro ingredientsListTitle, Color emptyPageTextColor, TextMeshPro ingredientsText, Color filledPageTextColor, int _ColorMask, Color missingIngredientsTextColor, Color missingIngredientsSpriteColor, List<IngredientTooltipObject> instantiatedIngredientObjects, Transform ingredientTooltipObjectsContainer)
+        public static IEnumerable<CodeInstruction> UpdateIngredientList(IEnumerable<CodeInstruction> instructions)
         {
-            if (instance.currentState == PageContent.State.Empty)
-            {
-                ingredientsListTitle.color = emptyPageTextColor;
-                ingredientsText.text = string.Empty;
-            }
-            else
-            {
-                ingredientsListTitle.color = filledPageTextColor;
-                var ingredientsAtlasName = Settings<TMPManagerSettings>.Asset.IngredientsAtlasName;
-                var iconsAtlasName = Settings<TMPManagerSettings>.Asset.IconsAtlasName;
-                var str1 = string.Empty;
-                var str2 = "#" + ColorUtility.ToHtmlStringRGBA(missingIngredientsTextColor);
-                var str3 = "#" + ColorUtility.ToHtmlStringRGBA(missingIngredientsSpriteColor);
-                for (int index = 0; index < instance.currentPotion.usedComponents.Count; ++index)
-                {
-                    var usedComponent = instance.currentPotion.usedComponents[index];
-                    var isLegendaryIngredient = usedComponent.componentObject is AlchemyMachineProduct;
-                    var atlasName = isLegendaryIngredient ? iconsAtlasName : ingredientsAtlasName;
-                    var atlasSpriteName = isLegendaryIngredient ? usedComponent.componentObject.name : IngredientsAtlasGenerator.GetAtlasSpriteName(usedComponent.componentObject);
+            var getIconAtlasNameIfUsedComponentIsProduct = AccessTools.Method(typeof(RecipeUIService), nameof(GetIconAtlasNameIfUsedComponentIsProduct));
+            var getAtlasSpriteNameIfUsedComponentIsProduct = AccessTools.Method(typeof(RecipeUIService), nameof(GetAtlasSpriteNameIfUsedComponentIsProduct));
+            var returnInstructions = new List<CodeInstruction>();
 
-                    var itemCount = isLegendaryIngredient
-                                        ? RecipeService.GetAvailableProductCount(usedComponent.componentObject as AlchemyMachineProduct)
-                                        : usedComponent.componentObject is InventoryItem item
-                                            ? Managers.Player.inventory.GetItemCount(item)
-                                            : 1;
-                    if (usedComponent.componentType == UsedComponent.ComponentType.InventoryItem && itemCount < usedComponent.amount)
-                        str1 = str1 + "<sprite=\"" + atlasName + "\" color=" + str3 + " name=\"" + atlasSpriteName + "\"><color=" + str2 + ">"
-                                + (usedComponent.amount == 0 ? "" : string.Format("<sub><voffset=-0.13em>{0}</voffset></sub>", usedComponent.amount)) + "</color> ";
-                    else
-                        str1 = str1 + "<sprite=\"" + atlasName + "\" name=\"" + atlasSpriteName + "\">"
-                                + (usedComponent.amount == 0 ? "" : string.Format("<sub><voffset=-0.13em>{0}</voffset></sub>", usedComponent.amount)) + " ";
-                }
-                ingredientsText.text = str1;
-            }
-            ingredientsText.ForceMeshUpdate(true, true);
-            foreach (var componentsInChild in ingredientsText.GetComponentsInChildren<MeshRenderer>())
+            foreach (var instruction in instructions)
             {
-                var material = componentsInChild.material;
-                if (material.HasProperty(_ColorMask))
-                    material.SetFloat(_ColorMask, 14f);
+                //Find every instance where ingredientsAtlasName is accessed
+                if (instruction.opcode == OpCodes.Ldloc_0)
+                {
+                    //Replace the Ldloc_0 call with our method effectivly filtering ingredientsAtlasName through our method whenever it is accessed
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 5); // currentPotion
+                    yield return new CodeInstruction(OpCodes.Ldloc_0); // ingredientsAtlasName
+                    yield return new CodeInstruction(OpCodes.Call, getIconAtlasNameIfUsedComponentIsProduct);
+                    continue;
+                }
+
+                //Find every instance where GetAtlasSpriteName is called
+                if (instruction.operand is MethodInfo getAtlasSpriteName 
+                    && getAtlasSpriteName == AccessTools.Method(typeof(IngredientsAtlasGenerator), nameof(IngredientsAtlasGenerator.GetAtlasSpriteName)))
+                {
+                    //Replace the GetAtlasSpriteName call with our method
+                    yield return new CodeInstruction(OpCodes.Call, getAtlasSpriteNameIfUsedComponentIsProduct);
+                    continue;
+                }
+                yield return instruction;
             }
-            IngredientTooltipObject.RespawnIngredientTooltipObjects(instantiatedIngredientObjects,
-                                                                    ingredientsText,
-                                                                    instance.ingredientTooltipRaycastRange,
-                                                                    ingredientTooltipObjectsContainer,
-                                                                    instance.currentPotion?.usedComponents);
-            return false;
         }
+
+
+        public static string GetIconAtlasNameIfUsedComponentIsProduct(UsedComponent usedComponent, string oldIngredientsAtlasName)
+        {
+            if (usedComponent.componentObject is not AlchemyMachineProduct) return oldIngredientsAtlasName;
+            return Settings<TMPManagerSettings>.Asset.IconsAtlasName;
+        }
+
+        public static string GetAtlasSpriteNameIfUsedComponentIsProduct(ScriptableObject componentObject)
+        {
+            if (componentObject is not AlchemyMachineProduct) return IngredientsAtlasGenerator.GetAtlasSpriteName(componentObject);
+            return componentObject.name;
+        }
+
 
         /// <summary>
         /// Postfix method for DisableContinueFromHereButtonPatch.
