@@ -1,7 +1,7 @@
 ﻿using PotionCraft.ManagersSystem;
 using PotionCraft.SaveFileSystem;
 using PotionCraft.SaveLoadSystem;
-using PotionCraft.ScriptableObjects;
+using PotionCraft.ScriptableObjects.Potion;
 using PotionCraftAlchemyMachineRecipes.Scripts.Storage;
 using System;
 using System.Collections.Generic;

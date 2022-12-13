@@ -6,6 +6,7 @@ using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.SaveLoadSystem;
 using PotionCraft.ScriptableObjects;
 using PotionCraft.ScriptableObjects.AlchemyMachineProducts;
+using PotionCraft.ScriptableObjects.Potion;
 using PotionCraftAlchemyMachineRecipes.Scripts.Storage;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static PotionCraft.SaveLoadSystem.ProgressState;
-using static PotionCraft.ScriptableObjects.Potion;
-using static PotionCraft.ScriptableObjects.Potion.UsedComponent;
+using static PotionCraft.ScriptableObjects.Potion.PotionUsedComponent;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 {
@@ -67,7 +67,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             var usedPotionBases = potions.Select(p => p.potionBase).GroupBy(p => p.name).Select(pg => pg.First()).ToList();
             usedPotionBases.ForEach(potionBase =>
             {
-                var component = UsedComponent.GetComponent(recipe.usedComponents, potionBase);
+                var component = PotionUsedComponent.GetComponent(recipe.usedComponents, potionBase);
             });
 
             potions.ForEach(potion =>
@@ -96,7 +96,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 potion.usedComponents.ToList().ForEach(ingredient =>
                 {
                     if (ingredient.componentObject is PotionBase) return;
-                    var component = UsedComponent.GetComponent(recipe.usedComponents, ingredient.componentObject);
+                    var component = PotionUsedComponent.GetComponent(recipe.usedComponents, ingredient.componentObject);
                     if (ingredient.componentObject is InventoryItem)
                         component.amount += ingredient.amount;
                 });
@@ -129,7 +129,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             }
             recipe.potionFromPanel.collectedPotionEffects.Add(legendaryIngredient?.name);
             recipe.potionFromPanel.collectedPotionEffects.Add(spawnedItem.name);
-            UsedComponent.ClearIndexes();
+            PotionUsedComponent.ClearIndexes();
 
             return recipe;
         }
@@ -259,10 +259,10 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             var requiredLegendaryProduct = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
             if (requiredLegendaryProduct != null)
             {
-                var component = UsedComponent.GetComponent(instance.currentPotion.usedComponents, requiredLegendaryProduct);
+                var component = PotionUsedComponent.GetComponent(instance.currentPotion.usedComponents, requiredLegendaryProduct);
                 ++component.amount;
             }
-            UsedComponent.ClearIndexes();
+            PotionUsedComponent.ClearIndexes();
             return true;
         }
 
@@ -279,7 +279,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             if (instance.currentPotion.usedComponents.Count == 0) return;
             if (instance.currentPotion.usedComponents.Last().componentObject is not AlchemyMachineProduct) return;
             instance.currentPotion.usedComponents.RemoveAt(instance.currentPotion.usedComponents.Count - 1);
-            UsedComponent.ClearIndexes();
+            PotionUsedComponent.ClearIndexes();
         }
 
         private static void FixRecipeIfBroken(Potion potion)
@@ -287,13 +287,13 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             var firstComponent = potion.usedComponents.FirstOrDefault();
             if (firstComponent == null || firstComponent.componentObject is not PotionBase)
             {
-                potion.usedComponents.Insert(0, new UsedComponent
+                potion.usedComponents.Insert(0, new PotionUsedComponent
                 {
                     amount = 1,
                     componentObject = potion.potionBase ?? Managers.RecipeMap.currentMap.potionBase,
                     componentType = ComponentType.PotionBase
                 });
-                UsedComponent.ClearIndexes();
+                PotionUsedComponent.ClearIndexes();
             }
         }
 

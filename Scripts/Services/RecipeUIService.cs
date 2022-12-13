@@ -6,7 +6,7 @@ using PotionCraft.ObjectBased.UIElements.Books;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ObjectBased.UIElements.FinishLegendarySubstanceMenu;
 using PotionCraft.ObjectBased.UIElements.Tooltip;
-using PotionCraft.ScriptableObjects;
+using PotionCraft.ScriptableObjects.Potion;
 using PotionCraft.ScriptableObjects.AlchemyMachineProducts;
 using PotionCraft.Settings;
 using PotionCraft.TMPAtlasGenerationSystem;
@@ -18,7 +18,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using TMPro;
 using UnityEngine;
-using static PotionCraft.ScriptableObjects.Potion;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 {
@@ -152,6 +151,13 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 
             foreach (var instruction in instructions)
             {
+                //Find and replace "<sprite=\"" to add a space so wrapping can occur
+                if (instruction.opcode == OpCodes.Ldstr && instruction.operand is string op && op.Equals("<sprite=\""))
+                {
+                    yield return new CodeInstruction(OpCodes.Ldstr, "<size=1%> </size><sprite=\"");
+                    continue;
+                }
+
                 //Find every instance where ingredientsAtlasName is accessed
                 if (instruction.opcode == OpCodes.Ldloc_0)
                 {
@@ -175,15 +181,20 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         }
 
 
-        public static string GetIconAtlasNameIfUsedComponentIsProduct(UsedComponent usedComponent, string oldIngredientsAtlasName)
+        public static string GetIconAtlasNameIfUsedComponentIsProduct(PotionUsedComponent usedComponent, string oldIngredientsAtlasName)
         {
             if (usedComponent.componentObject is not AlchemyMachineProduct) return oldIngredientsAtlasName;
+            Plugin.PluginLogger.LogMessage($"{(usedComponent.componentObject as AlchemyMachineProduct).name} - ");
             return Settings<TMPManagerSettings>.Asset.IconsAtlasName;
         }
 
         public static string GetAtlasSpriteNameIfUsedComponentIsProduct(ScriptableObject componentObject)
         {
             if (componentObject is not AlchemyMachineProduct) return IngredientsAtlasGenerator.GetAtlasSpriteName(componentObject);
+            if (componentObject.name == "PhilosophersStone")
+            {
+                return "Philosopher'sStone";
+            }
             return componentObject.name;
         }
 

@@ -7,6 +7,7 @@ using PotionCraft.ObjectBased.UIElements.Books.GoalsBook;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ObjectBased.UIElements.ConfirmationWindow;
 using PotionCraft.ScriptableObjects;
+using PotionCraft.ScriptableObjects.Potion;
 using PotionCraft.ScriptableObjects.AlchemyMachineProducts;
 using PotionCraft.Settings;
 using PotionCraft.SoundSystem;

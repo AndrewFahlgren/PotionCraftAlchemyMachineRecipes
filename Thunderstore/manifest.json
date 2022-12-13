@@ -1,8 +1,8 @@
 ﻿{
   "name": "Alchemy_Machine_Recipes",
-  "version_number": "0.5.3",
+  "version_number": "1.0.0",
   "website_url": "https://github.com/AndrewFahlgren/PotionCraftAlchemyMachineRecipes",
-  "description": "A mod to unlock the save recipe button when crafting with the alchemy machine. Only compatible with Potion Craft beta v0.5.0.",
+  "description": "A mod to unlock the save recipe button when crafting with the alchemy machine. Compatible with Potion Craft v1.0.",
   "dependencies": [
     "BepInEx-BepInExPack_PotionCraft-5.4.18"
   ]

@@ -10,15 +10,33 @@ using PotionCraft.ObjectBased.UIElements.Tooltip;
 using PotionCraft.SaveFileSystem;
 using PotionCraft.SaveLoadSystem;
 using PotionCraft.ScriptableObjects;
+using PotionCraft.ScriptableObjects.AlchemyMachineProducts;
+using PotionCraft.ScriptableObjects.Potion;
+using PotionCraft.TMPAtlasGenerationSystem;
 using PotionCraftAlchemyMachineRecipes.Scripts.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts
 {
+    [HarmonyPatch(typeof(Icon), "GetByName")]
+    public class test
+    {
+        static bool Prefix(ref Icon __result, string iconName)
+        {
+            if (string.IsNullOrEmpty(iconName))
+            {
+                __result = Icon.allIcons.FirstOrDefault();
+                return false;
+            }
+            return true;
+        }
+    }
+
     [HarmonyPatch(typeof(FinishLegendarySubstanceWindow), "UpdateSaveProductRecipeButton")]
     public class UpdateSaveProductRecipeButtonPatch
     {
