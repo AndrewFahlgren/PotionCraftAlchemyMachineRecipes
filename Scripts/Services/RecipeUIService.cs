@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using TMPro;
 using UnityEngine;
+using PotionCraft.ScriptableObjects;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 {
@@ -238,6 +239,23 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 Ex.LogException(ex);
             }
             
+        }
+
+        public static bool FixPotionIconException(ref Icon result, string iconName)
+        {
+            Icon tempResult = null;
+            var returnValue = Ex.RunSafe(() =>
+            {
+
+                if (string.IsNullOrEmpty(iconName))
+                {
+                    tempResult = Icon.allIcons.FirstOrDefault();
+                    return false;
+                }
+                return true;
+            });
+            result = tempResult;
+            return returnValue;
         }
     }
 }

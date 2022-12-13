@@ -24,16 +24,11 @@ using UnityEngine;
 namespace PotionCraftAlchemyMachineRecipes.Scripts
 {
     [HarmonyPatch(typeof(Icon), "GetByName")]
-    public class test
+    public class Icon_GetByName
     {
         static bool Prefix(ref Icon __result, string iconName)
         {
-            if (string.IsNullOrEmpty(iconName))
-            {
-                __result = Icon.allIcons.FirstOrDefault();
-                return false;
-            }
-            return true;
+            return RecipeUIService.FixPotionIconException(ref __result, iconName);
         }
     }
 
