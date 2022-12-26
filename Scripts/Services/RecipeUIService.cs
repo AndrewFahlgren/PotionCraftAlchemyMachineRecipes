@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.TMP;
-using PotionCraft.ObjectBased.UIElements;
-using PotionCraft.ObjectBased.UIElements.Books;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ObjectBased.UIElements.FinishLegendarySubstanceMenu;
 using PotionCraft.ObjectBased.UIElements.Tooltip;
@@ -16,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using TMPro;
 using UnityEngine;
 using PotionCraft.ScriptableObjects;
+using PotionCraft.ManagersSystem.Player;
 
 namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 {
@@ -148,14 +146,38 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         {
             var getIconAtlasNameIfUsedComponentIsProduct = AccessTools.Method(typeof(RecipeUIService), nameof(GetIconAtlasNameIfUsedComponentIsProduct));
             var getAtlasSpriteNameIfUsedComponentIsProduct = AccessTools.Method(typeof(RecipeUIService), nameof(GetAtlasSpriteNameIfUsedComponentIsProduct));
+            var getItemCountIfUsedComponentIsProduct = AccessTools.Method(typeof(RecipeUIService), nameof(GetItemCountIfUsedComponentIsProduct));
             var returnInstructions = new List<CodeInstruction>();
 
+            var modifyingGetItemCount = false;
             foreach (var instruction in instructions)
             {
-                //Find and replace "<sprite=\"" to add a space so wrapping can occur
-                if (instruction.opcode == OpCodes.Ldstr && instruction.operand is string op && op.Equals("<sprite=\""))
+                //Find the first call where we start to call Inventory.GetItemCount and skip it
+                if (instruction.operand is MethodInfo getPlayer
+                    && getPlayer == AccessTools.Method(typeof(Managers), $"get_{nameof(Managers.Player)}"))
                 {
-                    yield return new CodeInstruction(OpCodes.Ldstr, "<size=1%> </size><sprite=\"");
+                    modifyingGetItemCount = true;
+                    continue;
+                }
+
+                if (modifyingGetItemCount)
+                {
+                    //Skip the call to get the Inventory from the player manager
+                    if (instruction.opcode == OpCodes.Ldfld && instruction.operand is FieldInfo fieldInfo
+                        && fieldInfo == AccessTools.Field(typeof(PlayerManager), nameof(PlayerManager.inventory)))
+                    {
+                        continue;
+                    }
+
+                    //Skip all operands if we have found the initial call to get the Player manager until we find the call to Inventory.GetItemCount and then return our item count method instead
+                    if (instruction.opcode == OpCodes.Callvirt)
+                    {
+                        modifyingGetItemCount = false;
+                        //Replace the Inventory.GetItemCount call with our method
+                        yield return new CodeInstruction(OpCodes.Call, getItemCountIfUsedComponentIsProduct);
+                        continue;
+                    }
+                    yield return instruction;
                     continue;
                 }
 
@@ -181,6 +203,11 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             }
         }
 
+        private static int GetItemCountIfUsedComponentIsProduct(InventoryItem item)
+        {
+            if (item is not AlchemyMachineProduct product) return Managers.Player.inventory.GetItemCount(item);
+            return RecipeService.GetAvailableProductCount(product);
+        }
 
         public static string GetIconAtlasNameIfUsedComponentIsProduct(PotionUsedComponent usedComponent, string oldIngredientsAtlasName)
         {
