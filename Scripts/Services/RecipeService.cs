@@ -1,5 +1,6 @@
 ﻿using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Potion;
+using PotionCraft.NotificationSystem;
 using PotionCraft.ObjectBased.AlchemyMachine;
 using PotionCraft.ObjectBased.Potion;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
@@ -34,7 +35,6 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             var recipe = GenerateRecipe();
             if (recipe == null) return true;
             var recipeBook = Managers.Potion.recipeBook;
-            var potionCraftPanel = Managers.Potion.potionCraftPanel;
             //Add recipe to book
             recipeBook.AddRecipe(recipe);
             Managers.Potion.potionCraftPanel.UpdateSaveRecipeButton(false);
@@ -44,9 +44,10 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 
         private static Potion GenerateRecipe()
         {
-            if (StaticStorage.Ingredients == null)
+            if (StaticStorage.Ingredients == null || !StaticStorage.Ingredients.Any())
             {
-                Plugin.PluginLogger.LogInfo("Error: No ingredients were stored");
+                Plugin.PluginLogger.LogInfo("Error: No ingredients were stored"); 
+                Notification.ShowText("Unable to save recipe", "Some data is missing because this product was created before loading the save.", Notification.TextType.EventText);
                 return null;
             }
 
