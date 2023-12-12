@@ -31,17 +31,17 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static bool BrewPotion(RecipeBookBrewPotionButton instance, RecipeBookRightPageContent rightPageContent)
         {
-            if (rightPageContent.currentPotion == null) return true;
-            if (!RecipeService.IsLegendaryRecipe(rightPageContent.currentPotion)) return true;
+            if (rightPageContent.pageContentPotion == null) return true;
+            if (!RecipeService.IsLegendaryRecipe(rightPageContent.pageContentPotion)) return true;
             MakeProduct(instance, rightPageContent);
             return false;
         }
 
         private static void MakeProduct(RecipeBookBrewPotionButton instance, RecipeBookRightPageContent rightPageContent)
         {
-            var resultPotionsCount = rightPageContent.GetAvailableResultPotionsCount();
+            var resultPotionsCount = RecipeBook.GetAvailableResultPotionsCount(rightPageContent.currentState, rightPageContent.pageContentPotion);
 
-            if (resultPotionsCount == 0 || rightPageContent.currentPotion == null) return;
+            if (resultPotionsCount == 0 || rightPageContent.pageContentPotion == null) return;
 
             var count = instance.GetType().GetMethod("GetPotionCountForBrew", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(instance, null) as int?;
             if (count == null || count == 0) return;
@@ -60,7 +60,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 
             void BrewProduct()
             {
-                var potion = rightPageContent.currentPotion;
+                var potion = rightPageContent.pageContentPotion;
                 var productName = potion.potionFromPanel.collectedPotionEffects.LastOrDefault();
                 if (string.IsNullOrEmpty(productName)) return;
                 //Create clone of default product
@@ -72,7 +72,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                     product.customDescription = potion.customDescription;
 
                 //Remove ingredients in accordance with the recipe
-                rightPageContent.DecreaseIngredientsAmountOnPotionBrewing(count.Value);
+                RecipeBook.DecreaseIngredientsAmountOnPotionBrewing(rightPageContent.pageContentPotion, count.Value);
                 DecreaseLegendaryIngredientsAmmountOnBrewing(rightPageContent, count.Value);
                 Managers.Player.inventory.onItemChanged.Invoke(false);
 
@@ -101,7 +101,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 
         private static void DecreaseLegendaryIngredientsAmmountOnBrewing(RecipeBookRightPageContent rightPageContent, int countToRemove)
         {
-            var requiredProductInstance = GetRequiredAlchemyMachineProduct(rightPageContent.currentPotion);
+            var requiredProductInstance = GetRequiredAlchemyMachineProduct(rightPageContent.pageContentPotion);
             if (requiredProductInstance == null) return;
             var totalItemCount = RecipeService.GetAvailableProductCount(requiredProductInstance);
             //This check should be unnesessary...

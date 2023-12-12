@@ -47,7 +47,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             {
             if (!RecipeService.IsLegendaryRecipe(instance)) return true;
             var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance);
-                productTooltip = product.GetTooltipContent(itemCount, anyModifierHeld);
+                productTooltip = product.GetTooltipContent(itemCount, null, anyModifierHeld);
             return false;
             });
             if (exResult || productTooltip == null) return true;
@@ -80,22 +80,25 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// This method hides most of the potion customization options which have no purpose for alchemy machine recipes.
         /// This method is also responsible for adding the alchemy machine product image in place of where the potion image would be.
         /// </summary>
-        public static void HidePotionCustomization(RecipeBookLeftPageContent instance, SpriteRenderer potionSlotBackground)
+        public static void HidePotionCustomization(RecipeBookLeftPageContent instance, GameObject potionSlotBackgroundGameObject)
         {
             const float spriteScale = 1.5f;
+
+            var potionSlotBackground = potionSlotBackgroundGameObject.GetComponent<SpriteRenderer>();
 
             if (StaticStorage.PotionBackgroundSprite == null)
             {
                 StaticStorage.PotionBackgroundSprite = potionSlotBackground.sprite;
                 StaticStorage.PotionBackgroundColor = potionSlotBackground.color;
                 StaticStorage.PotionBackgroundSize = potionSlotBackground.size;
+                StaticStorage.PotionBackgroundIsActive = potionSlotBackgroundGameObject.activeSelf;
             }
-            if (instance.currentPotion == null)
+            if (instance.pageContentPotion == null)
             {
                 RestorePotionSlotBackground(potionSlotBackground);
                 return;
             }
-            var isLegendaryRecipe = RecipeService.IsLegendaryRecipe(instance.currentPotion);
+            var isLegendaryRecipe = RecipeService.IsLegendaryRecipe(instance.pageContentPotion);
             ShowHide(instance.potionCustomizationPanel.customizeBottleButton.gameObject, !isLegendaryRecipe);
             ShowHide(instance.potionCustomizationPanel.customizeIconButton.gameObject, !isLegendaryRecipe);
             ShowHide(instance.potionCustomizationPanel.customizeStickerButton.gameObject, !isLegendaryRecipe);
@@ -108,13 +111,18 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
 
             if (isLegendaryRecipe)
             {
-                var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance.currentPotion);
+                var product = AlchemyMachineProductService.GetAlchemyMachineProduct(instance.pageContentPotion);
                 if (product == null) return;
                 var sprite = product.GetRecipeIcon();
                 potionSlotBackground.color = new Color(1,1,1,1);
                 potionSlotBackground.sprite = sprite;
                 potionSlotBackground.color = new Color(potionSlotBackground.color.r, potionSlotBackground.color.g, potionSlotBackground.color.b, 1.0f);
                 potionSlotBackground.size *= spriteScale;
+                potionSlotBackgroundGameObject.SetActive(true);
+                var recipePageInventory = instance.transform.Find("PotionBottle").Find("InventoryPanel").GetComponent<RecipeBookPanelInventoryPanel>().Inventory;
+                recipePageInventory.RemoveItem(recipePageInventory.items.First().Key);
+                var tooltip = AccessTools.Field(instance.GetType(), "placeholderForPotionTooltip").GetValue(instance) as RecipeBookPotionPlaceholderForTooltip;
+                tooltip.isInteractable = false;
             }
             else
             {
@@ -128,6 +136,8 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
             potionSlotBackground.sprite = StaticStorage.PotionBackgroundSprite;
             potionSlotBackground.color = StaticStorage.PotionBackgroundColor;
             potionSlotBackground.size = StaticStorage.PotionBackgroundSize;
+            if (potionSlotBackground.gameObject.activeSelf != StaticStorage.PotionBackgroundIsActive)
+                potionSlotBackground.gameObject.SetActive(StaticStorage.PotionBackgroundIsActive);
         }
 
         private static void ShowHide(GameObject gameObject, bool show)
@@ -182,11 +192,11 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
                 }
 
                 //Find every instance where ingredientsAtlasName is accessed
-                if (instruction.opcode == OpCodes.Ldloc_0)
+                if (instruction.opcode == OpCodes.Ldloc_1)
                 {
                     //Replace the Ldloc_0 call with our method effectivly filtering ingredientsAtlasName through our method whenever it is accessed
-                    yield return new CodeInstruction(OpCodes.Ldloc_S, 5); // currentPotion
-                    yield return new CodeInstruction(OpCodes.Ldloc_0); // ingredientsAtlasName
+                    yield return new CodeInstruction(OpCodes.Ldloc_S, 6); // usedComponent
+                    yield return new CodeInstruction(OpCodes.Ldloc_1); // ingredientsAtlasName
                     yield return new CodeInstruction(OpCodes.Call, getIconAtlasNameIfUsedComponentIsProduct);
                     continue;
                 }
@@ -233,8 +243,8 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void DisableContinueFromHereButton(RecipeBookContinuePotionBrewingButton instance, RecipeBookRightPageContent rightPageContent)
         {
-            if (rightPageContent.currentPotion == null) return;
-            if (!RecipeService.IsLegendaryRecipe(rightPageContent.currentPotion)) return;
+            if (rightPageContent.pageContentPotion == null) return;
+            if (!RecipeService.IsLegendaryRecipe(rightPageContent.pageContentPotion)) return;
             instance.Locked = true;
         }
 
@@ -243,13 +253,13 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// This method updates the ammount of available brews to the actual number.
         /// By default this calculation is only done with the normal ingredients and ignores required legendary stones.
         /// </summary>
-        public static void ChangeBrewPotionButtonCount(ref int result, RecipeBookRightPageContent instance)
+        public static void ChangeBrewPotionButtonCount(ref int result, Potion currentPotion)
         {
             try
             {
-            if (instance.currentPotion == null) return;
-            if (!RecipeService.IsLegendaryRecipe(instance.currentPotion)) return;
-            var requiredProductInstance = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
+            if (currentPotion == null) return;
+            if (!RecipeService.IsLegendaryRecipe(currentPotion)) return;
+            var requiredProductInstance = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(currentPotion);
             if (requiredProductInstance != null)
             {
                 //Get available count of the required legendary stone if it is required for the recipe

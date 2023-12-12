@@ -146,7 +146,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     [HarmonyPatch(typeof(RecipeBookLeftPageContent), "UpdatePage")]
     public class HidePotionCustomizationPatch
     {
-        static void Postfix(RecipeBookLeftPageContent __instance, SpriteRenderer ___potionSlotBackground)
+        static void Postfix(RecipeBookLeftPageContent __instance, GameObject ___potionSlotBackground)
         {
             Ex.RunSafe(() => RecipeUIService.HidePotionCustomization(__instance, ___potionSlotBackground));
         }
@@ -188,12 +188,12 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
         }
     }
 
-    [HarmonyPatch(typeof(RecipeBookRightPageContent), "GetAvailableResultPotionsCount")]
+    [HarmonyPatch(typeof(RecipeBook), "GetAvailableResultPotionsCount")]
     public class ChangeBrewPotionButtonCountPatch
     {
-        static void Postfix(ref int __result, RecipeBookRightPageContent __instance)
+        static void Postfix(ref int __result, Potion currentPotion)
         {
-            RecipeUIService.ChangeBrewPotionButtonCount(ref __result, __instance);
+            RecipeUIService.ChangeBrewPotionButtonCount(ref __result, currentPotion);
         }
     }
 
@@ -209,8 +209,8 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
         {
             try
             {
-                if (rightPageContent.currentPotion == null) return true;
-                if (!RecipeService.IsLegendaryRecipe(rightPageContent.currentPotion)) return true;
+                if (rightPageContent.pageContentPotion == null) return true;
+                if (!RecipeService.IsLegendaryRecipe(rightPageContent.pageContentPotion)) return true;
                 return false;
             }
             catch(Exception ex)
@@ -224,18 +224,18 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts
     [HarmonyPatch(typeof(RecipeBookLeftPageContent), "UpdateEffects")]
     public class HidePotionCustomizationEffectTextPrefixPatch
     {
-        static bool Prefix(Potion ___currentPotion)
+        static bool Prefix(Potion ___pageContentPotion)
         {
-            return Ex.RunSafe(() => RecipeService.RemoveRecipePotionEffects(___currentPotion));
+            return Ex.RunSafe(() => RecipeService.RemoveRecipePotionEffects(___pageContentPotion));
         }
     }
 
     [HarmonyPatch(typeof(RecipeBookLeftPageContent), "UpdateEffects")]
     public class HidePotionCustomizationEffectTextPostfixPatch
     {
-        static void Postfix(Potion ___currentPotion)
+        static void Postfix(Potion ___pageContentPotion)
         {
-            Ex.RunSafe(() => RecipeService.ReAddRecipePotionEffects(___currentPotion));
+            Ex.RunSafe(() => RecipeService.ReAddRecipePotionEffects(___pageContentPotion));
         }
     }
 

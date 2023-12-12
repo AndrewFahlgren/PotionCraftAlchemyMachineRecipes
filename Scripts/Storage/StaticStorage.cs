@@ -16,6 +16,7 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Storage
         public static Sprite PotionBackgroundSprite;
         public static Color PotionBackgroundColor;
         public static Vector2 PotionBackgroundSize;
+        public static bool PotionBackgroundIsActive;
         public static List<SavedRecipe> RecipesToSave;
         public static string StateJsonString;
     }

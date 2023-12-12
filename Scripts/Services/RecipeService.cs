@@ -254,13 +254,13 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static bool AddLegendaryIngredientToList(RecipeBookLeftPageContent instance)
         {
-            if (instance.currentPotion == null) return true;
-            FixRecipeIfBroken(instance.currentPotion);
-            if (!IsLegendaryRecipe(instance.currentPotion)) return true;
-            var requiredLegendaryProduct = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.currentPotion);
+            if (instance.pageContentPotion == null) return true;
+            FixRecipeIfBroken(instance.pageContentPotion);
+            if (!IsLegendaryRecipe(instance.pageContentPotion)) return true;
+            var requiredLegendaryProduct = AlchemyMachineProductService.GetRequiredAlchemyMachineProduct(instance.pageContentPotion);
             if (requiredLegendaryProduct != null)
             {
-                var component = PotionUsedComponent.GetComponent(instance.currentPotion.usedComponents, requiredLegendaryProduct);
+                var component = PotionUsedComponent.GetComponent(instance.pageContentPotion.usedComponents, requiredLegendaryProduct);
                 ++component.amount;
             }
             PotionUsedComponent.ClearIndexes();
@@ -274,12 +274,12 @@ namespace PotionCraftAlchemyMachineRecipes.Scripts.Services
         /// </summary>
         public static void RemoveLegendaryIngredientFromList(RecipeBookLeftPageContent instance)
         {
-            if (instance.currentPotion == null) return;
-            FixRecipeIfBroken(instance.currentPotion);
-            if (!IsLegendaryRecipe(instance.currentPotion)) return;
-            if (instance.currentPotion.usedComponents.Count == 0) return;
-            if (instance.currentPotion.usedComponents.Last().componentObject is not AlchemyMachineProduct) return;
-            instance.currentPotion.usedComponents.RemoveAt(instance.currentPotion.usedComponents.Count - 1);
+            if (instance.pageContentPotion == null) return;
+            FixRecipeIfBroken(instance.pageContentPotion);
+            if (!IsLegendaryRecipe(instance.pageContentPotion)) return;
+            if (instance.pageContentPotion.usedComponents.Count == 0) return;
+            if (instance.pageContentPotion.usedComponents.Last().componentObject is not AlchemyMachineProduct) return;
+            instance.pageContentPotion.usedComponents.RemoveAt(instance.pageContentPotion.usedComponents.Count - 1);
             PotionUsedComponent.ClearIndexes();
         }
 
