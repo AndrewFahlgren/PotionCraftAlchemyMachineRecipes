@@ -1,5 +1,5 @@
 # Alchemy Machine Recipes
-This is a PotionCraft mod to allow the saving of alchemy machine recipes! This mod is compatible with Potion Craft v1.0!
+This is a PotionCraft mod to allow the saving of alchemy machine recipes! This mod is compatible with Potion Craft v1.1!
 
 It enables the save recipe button when finishing a substance in the alchemy machine:
 ![image](https://github.com/AndrewFahlgren/PotionCraftAlchemyMachineRecipes/blob/master/Images/Save%20Alchemy%20Machine%20Recipe.png?raw=true)

@@ -2,10 +2,10 @@
   "$schema": "https://github.com/beat-saber-modding-group/BSIPA-MetadataFileSchema/blob/master/Schema.json",
   "author": "com.fahlgorithm.potioncraftalchemymachinerecipies",
   "description": "A mod to unlock the save recipe button when crafting with the alchemy machine.",
-  "gameVersion": "1.0.5.1",
+  "gameVersion": "1.1.0.0",
   "id": "PotionCraftAlchemyMachineRecipes",
   "name": "PotionCraftAlchemyMachineRecipes",
-  "version": "1.0.5.1",
+  "version": "1.1.0.0",
   "dependsOn": {}
 
 }
